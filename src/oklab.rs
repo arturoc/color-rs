@@ -671,7 +671,7 @@ fn test_ranges() {
     let labback = OkLab::from_hcl(hue, chroma, luma);
     let rgb_back: Rgb<f32> = labback.to_rgb();
     assert!(rgb_back.r >= -0.000001, "rgb.r {}", rgb_back.r);
-    assert!(rgb_back.g <=  1.000001, "rgb.r {}", rgb_back.r);
+    assert!(rgb_back.r <=  1.000001, "rgb.r {}", rgb_back.r);
     assert!(rgb_back.g >= -0.000001, "rgb.g {}", rgb_back.g);
     assert!(rgb_back.g <=  1.000001, "rgb.g {}", rgb_back.g);
     assert!(rgb_back.b >= -0.000001, "rgb.b {}", rgb_back.b);
