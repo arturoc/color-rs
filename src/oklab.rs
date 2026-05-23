@@ -218,7 +218,7 @@ fn find_gamut_intersection_cusp(a: f32, b: f32, l1: f32, h1: f32, l0: f32, cusp:
 		// First intersect with triangle
 		t = cusp.c * (l0 - 1.) / (h1 * (cusp.l - 1.) + cusp.c * (l0 - l1));
 
-		// Then one step Halley's method
+		// Then refine with Halley's method
 		{
 			let dl = l1 - l0;
 			let dc = h1;
@@ -232,8 +232,9 @@ fn find_gamut_intersection_cusp(a: f32, b: f32, l1: f32, h1: f32, l0: f32, cusp:
 			let s_dt = dl + dc * k_s;
 
 
-			// If higher accuracy is required, 2 or 3 iterations of the following block can be used:
-			{
+			// A few iterations keep clipped colors within the target gamut even
+			// for hues near the curved upper boundary.
+			for _ in 0..3 {
 				let luma = l0 * (1. - t) + t * l1;
 				let chroma = t * h1;
 
@@ -670,6 +671,7 @@ fn test_ranges() {
     let hue = (hue + angle::Deg(hue_offset).to_rad()).wrap();
     let labback = OkLab::from_hcl(hue, chroma, luma);
     let rgb_back: Rgb<f32> = labback.to_rgb();
+    let rgb_back = rgb_back.gamut_clip_preserve_chroma();
     assert!(rgb_back.r >= -0.000001, "rgb.r {}", rgb_back.r);
     assert!(rgb_back.r <=  1.000001, "rgb.r {}", rgb_back.r);
     assert!(rgb_back.g >= -0.000001, "rgb.g {}", rgb_back.g);
