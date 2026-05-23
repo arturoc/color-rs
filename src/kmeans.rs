@@ -70,9 +70,9 @@ impl<Wp: WhitePoint> Calculate for Lab<f32, Wp> {
     #[inline]
     fn create_random(rng: &mut impl Rng) -> Lab<f32, Wp> {
         Lab::new(
-            rng.gen_range(0.0, 100.0),
-            rng.gen_range(-128.0, 127.0),
-            rng.gen_range(-128.0, 127.0),
+            rng.gen_range(0.0..100.0),
+            rng.gen_range(-128.0..127.0),
+            rng.gen_range(-128.0..127.0),
         )
     }
 
@@ -147,7 +147,7 @@ impl Calculate for Rgb<f32, Srgb> {
 
     #[inline]
     fn create_random(rng: &mut impl Rng) -> Rgb<f32, Srgb> {
-        Rgb::new(rng.gen(), rng.gen(), rng.gen())
+        Rgb::new(rng.r#gen(), rng.r#gen(), rng.r#gen())
     }
 
     #[inline]
@@ -511,7 +511,7 @@ impl<Wp: WhitePoint + Copy> Sort for Lab<f32, Wp> {
         Some(res.centroid)
     }
 
-    fn sort_indexed_colors(centroids: &Vec<Self>, indices: &[u8]) -> Vec<CentroidData<Self>> {
+    fn sort_indexed_colors(centroids: &[Self], indices: &[u8]) -> Vec<CentroidData<Self>> {
         // Count occurences of each color - "histogram"
         let mut map: std::collections::HashMap<u8, u64> = std::collections::HashMap::new();
         for (i, _) in centroids.iter().enumerate() {
@@ -573,7 +573,7 @@ impl Sort for Rgb<f32, Srgb> {
         Some(res.centroid)
     }
 
-    fn sort_indexed_colors(centroids: &Vec<Self>, indices: &[u8]) -> Vec<CentroidData<Self>> {
+    fn sort_indexed_colors(centroids: &[Self], indices: &[u8]) -> Vec<CentroidData<Self>> {
         // Count occurences of each color - "histogram"
         let mut map: std::collections::HashMap<u8, u64> = std::collections::HashMap::new();
         for (i, _) in centroids.iter().enumerate() {

@@ -17,15 +17,15 @@ use num_traits::{self, Zero, Saturating, NumCast, Num, Float};
 use std::{borrow::{Borrow, BorrowMut}, ops::{Mul, Div, Add, Sub, Index, IndexMut}};
 use std::marker::PhantomData;
 use std::mem;
-use color_space::{TransferFunction, Srgb, LinearRgb, MatrixColorSpace, D65};
+use crate::color_space::{TransferFunction, Srgb, LinearRgb, MatrixColorSpace, D65};
 use angle::*;
 
-use {Color, FloatColor};
-use {Channel, FloatChannel};
-use {Hsv, ToHsv};
-use {Luma, ToLuma};
-use xyz::{Xyz, ToXyz};
-use alpha::{ToRgba, Rgba};
+use crate::{Color, FloatColor};
+use crate::{Channel, FloatChannel};
+use crate::{Hsv, ToHsv};
+use crate::{Luma, ToLuma};
+use crate::xyz::{Xyz, ToXyz};
+use crate::alpha::{ToRgba, Rgba};
 use std::fmt::{self, Debug};
 
 use crate::{oklab::{OkLab, ToOkLab}, ToHsl, Hsl};
@@ -526,8 +526,8 @@ impl<T, S> BorrowMut<[T;3]> for Rgb<T, S> {
 
 /// SVG 1.0 color constants: http://www.w3.org/TR/SVG/types.html#ColorKeywords
 pub mod consts {
-    use Rgb;
-    use color_space::Srgb;
+    use crate::Rgb;
+    use crate::color_space::Srgb;
 
     pub static ALICEBLUE:               Rgb<u8, Srgb> = Rgb::new(0xF0, 0xF8, 0xFF);
     pub static ANTIQUEWHITE:            Rgb<u8, Srgb> = Rgb::new(0xFA, 0xEB, 0xD7);
@@ -680,9 +680,9 @@ where S: TransferFunction {}
 
 #[cfg(test)]
 mod tests {
-    use {Hsv, ToHsv};
-    use {Rgb, ToRgb};
-    use FloatColor;
+    use crate::{Hsv, ToHsv};
+    use crate::{Rgb, ToRgb};
+    use crate::FloatColor;
     use angle::*;
     use num_traits::Saturating;
 

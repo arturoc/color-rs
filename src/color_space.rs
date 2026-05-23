@@ -1,7 +1,7 @@
-use xyz::Xyz;
-use yxy::Yxy;
-use channel::Channel;
-use rgb::Rgb;
+use crate::xyz::Xyz;
+use crate::yxy::Yxy;
+use crate::channel::Channel;
+use crate::rgb::Rgb;
 use num_traits::{Float, cast};
 use std::ops::{Mul, Index};
 

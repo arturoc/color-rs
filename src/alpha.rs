@@ -14,13 +14,13 @@
 // limitations under the License.
 
 use std::{borrow::{Borrow, BorrowMut}, ops::{Mul, Div, Add, Sub, Index, IndexMut}};
-use color_space::TransferFunction;
+use crate::color_space::TransferFunction;
 use num_traits::Saturating;
 use std::mem;
-use {Color, Channel};
-use {Rgb, Rg, ToRgb, Hsv, YCbCr};
-use color_space::{Srgb, LinearRgb};
-use luma::{Luma, ToLuma};
+use crate::{Color, Channel};
+use crate::{Rgb, Rg, ToRgb, Hsv, YCbCr};
+use crate::color_space::{Srgb, LinearRgb};
+use crate::luma::{Luma, ToLuma};
 
 #[derive(Serialize, Deserialize, Clone, Copy, PartialEq, Eq, Debug)]
 pub struct AlphaColor<T, C> { pub c: C, pub a: T }

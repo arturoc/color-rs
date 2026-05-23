@@ -1,7 +1,7 @@
-use channel::Channel;
+use crate::channel::Channel;
 use num_traits::{Float, one, zero};
-use color_space::{WhitePoint, D65};
-use xyz::{ToXyz, Xyz};
+use crate::color_space::{WhitePoint, D65};
+use crate::xyz::{ToXyz, Xyz};
 use std::ops::Add;
 
 #[derive(Clone, Copy, Debug)]

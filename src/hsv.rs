@@ -16,11 +16,11 @@
 use num_traits::{self, NumCast, Num};
 use angle::*;
 
-use {Color, FloatColor};
-use {Channel, FloatChannel};
-use {Rgb, ToRgb};
-use alpha::{ToRgba, Rgba};
-use color_space::{Srgb, TransferFunction};
+use crate::{Color, FloatColor};
+use crate::{Channel, FloatChannel};
+use crate::{Rgb, ToRgb};
+use crate::alpha::{ToRgba, Rgba};
+use crate::color_space::{Srgb, TransferFunction};
 use std::marker::PhantomData;
 
 #[inline]
@@ -176,8 +176,8 @@ where S: TransferFunction {}
 
 #[cfg(test)]
 mod tests {
-    use {Hsv, ToHsv};
-    use {Rgb, ToRgb};
+    use crate::{Hsv, ToHsv};
+    use crate::{Rgb, ToRgb};
     use angle::*;
 
     #[test]

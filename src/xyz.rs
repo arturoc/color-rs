@@ -13,14 +13,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use channel::Channel;
+use crate::channel::Channel;
 use num_traits::Float;
-use rgb::{Rgb, ToRgb};
-use yxy::{Yxy, ToYxy};
-use color_space::{D65, WhitePoint, MatrixColorSpace, Srgb, TransferFunction};
+use crate::rgb::{Rgb, ToRgb};
+use crate::yxy::{Yxy, ToYxy};
+use crate::color_space::{D65, WhitePoint, MatrixColorSpace, Srgb, TransferFunction};
 use num_traits::{zero, NumCast, cast};
 // use srgb::{Srgb, ToSrgb};
-use lab::{Lab, ToLab};
+use crate::lab::{Lab, ToLab};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Xyz<T = f32, Wp = D65>

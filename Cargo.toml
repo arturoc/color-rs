@@ -5,6 +5,7 @@ authors = ["Arturo Castro", "Brendan Zabarauskas <bjzaba@yahoo.com.au>", "Luqman
 description = "A library that provides types and conversions for working with various color formats. Forked from the unmuntained crate color"
 license-file="LICENSE"
 repository="https://github.com/arturoc/color-rs"
+edition = "2024"
 
 [lib]
 name="color"

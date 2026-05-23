@@ -17,12 +17,12 @@ use num_traits::{Saturating, NumCast, Num};
 use std::ops::{Mul, Div, Add, Sub};
 use std::marker::PhantomData;
 
-use {Color, FloatColor};
-use {Channel, FloatChannel};
-use {Hsv, ToHsv};
-use {ToRgb, Rgb};
-use alpha::{ToRgba, Rgba};
-use color_space::{Srgb, TransferFunction};
+use crate::{Color, FloatColor};
+use crate::{Channel, FloatChannel};
+use crate::{Hsv, ToHsv};
+use crate::{ToRgb, Rgb};
+use crate::alpha::{ToRgba, Rgba};
+use crate::color_space::{Srgb, TransferFunction};
 
 
 #[derive(Serialize, Deserialize, Debug)]
