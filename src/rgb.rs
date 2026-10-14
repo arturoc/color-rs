@@ -22,6 +22,7 @@ use angle::*;
 
 use crate::{Color, FloatColor};
 use crate::{Channel, FloatChannel};
+use crate::channel::cast_hue;
 use crate::{Hsv, ToHsv};
 use crate::{Luma, ToLuma};
 use crate::xyz::{Xyz, ToXyz};
@@ -330,25 +331,27 @@ impl<T:Channel, S: TransferFunction> ToHsv for Rgb<T, S> {
         // Algorithm taken from the Wikipedia article on HSL and Hsv:
         // http://en.wikipedia.org/wiki/HSL_and_Hsv#From_Hsv
 
-        let rgb_u = self.to_rgb::<U>();
+        // Keep intermediate hue and saturation calculations in floating point;
+        // integer destinations are quantized only after the conversion.
+        let rgb = self.to_rgb::<f64>();
 
-        let mx = cast(cast::<U,f64>(rgb_u.r).max(cast(rgb_u.g)).max(cast(rgb_u.b)));
-        let mn = cast(cast::<U,f64>(rgb_u.r).min(cast(rgb_u.g)).min(cast(rgb_u.b)));
+        let mx = rgb.r.max(rgb.g).max(rgb.b);
+        let mn = rgb.r.min(rgb.g).min(rgb.b);
         let chr = mx - mn;
 
         if chr != Zero::zero() {
             let h =
-                if      rgb_u.r == mx       { ((rgb_u.g - rgb_u.b) / chr) % cast(6u8) }
-                else if rgb_u.g == mx       { ((rgb_u.b - rgb_u.r) / chr) + cast(2u8) }
-                else    /* rgb_u.b == mx */ { ((rgb_u.r - rgb_u.g) / chr) + cast(4u8) }
-            * cast(60u8);
+                if      rgb.r == mx       { (rgb.g - rgb.b) / chr }
+                else if rgb.g == mx       { ((rgb.b - rgb.r) / chr) + 2.0 }
+                else    /* rgb.b == mx */ { ((rgb.r - rgb.g) / chr) + 4.0 }
+            * 60.0;
 
             let s = chr / mx;
 
-            Hsv::new(Deg(h), s, mx)
+            Hsv::new(Deg(cast_hue(h)), s.to_channel(), mx.to_channel())
 
         } else {
-            Hsv::new(Zero::zero(), Zero::zero(),mx)
+            Hsv::new(Zero::zero(), Zero::zero(), mx.to_channel())
         }
     }
 }
@@ -371,7 +374,7 @@ impl<T:Channel, S: TransferFunction> ToHsl for Rgb<T, S> {
                 else    /* rgb_u.b == mx */ { ((rgb_f64.r - rgb_f64.g) / d) + 4. }
             * 60.;
 
-            Hsl::new(angle::cast(Deg(h)).unwrap(), Channel::from(s), Channel::from(l))
+            Hsl::new(Deg(cast_hue(h)), Channel::from(s), Channel::from(l))
         } else {
             Hsl::new(Zero::zero(), Zero::zero(), Channel::from(l))
         }
@@ -698,6 +701,32 @@ mod tests {
         assert_eq!(Rgb::<u8>::new(0x99, 0x00, 0x00).to_hsv::<f32>(), Hsv::<f32>::new(Deg(0.0), 1.0, 0.6));
         assert_eq!(Rgb::<u8>::new(0x00, 0x99, 0x00).to_hsv::<f32>(), Hsv::<f32>::new(Deg(120.0), 1.0, 0.6));
         assert_eq!(Rgb::<u8>::new(0x00, 0x00, 0x99).to_hsv::<f32>(), Hsv::<f32>::new(Deg(240.0), 1.0, 0.6));
+    }
+
+    #[test]
+    fn test_rgb_to_integer_hsv() {
+        for (r, g, b, hue) in [
+            (200u16, 150, 100, 30),
+            (150, 200, 100, 90),
+            (100, 200, 150, 150),
+            (100, 150, 200, 210),
+            (150, 100, 200, 270),
+            (200, 100, 150, 330),
+        ] {
+            assert_eq!(Rgb::<u16>::new(r, g, b).to_hsv::<u16>(), Hsv::new(Deg(hue), 32768, 200));
+        }
+        assert_eq!(Rgb::<u8>::new(255, 0, 0).to_hsv::<u16>(), Hsv::new(Deg(0), 65535, 65535));
+        assert_eq!(Rgb::<u8>::new(255, 255, 255).to_hsv::<u16>(), Hsv::new(Deg(0), 0, 65535));
+        assert_eq!(Rgb::<u8>::new(0, 0, 0).to_hsv::<u16>(), Hsv::new(Deg(0), 0, 0));
+        assert_eq!(Rgb::<u16>::new(123, 123, 123).to_hsv::<u16>(), Hsv::new(Deg(0), 0, 123));
+    }
+
+    #[test]
+    fn test_rgb_to_hsv_hue_rounding() {
+        let rgb = Rgb::<f64>::new(1.0, 0.263, 0.0);
+        assert_eq!(rgb.to_hsv::<u16>().h.0, 16);
+        assert!((rgb.to_hsv::<f64>().h.0 - 15.78).abs() < 1e-12);
+        assert_eq!(Rgb::<f64>::new(1.0, 0.0, 0.005).to_hsv::<u16>().h.0, 0);
     }
 
     #[test]

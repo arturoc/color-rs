@@ -18,6 +18,7 @@ use angle::*;
 
 use crate::{Color, FloatColor};
 use crate::{Channel, FloatChannel};
+use crate::channel::cast_hue;
 use crate::{Rgb, ToRgb};
 use crate::alpha::{ToRgba, Rgba};
 use crate::color_space::{Srgb, TransferFunction};
@@ -121,7 +122,7 @@ impl<T:Channel + NumCast + Num, S: TransferFunction> ToHsv for Hsv<T, S> {
     type Standard = S;
     #[inline]
     fn to_hsv<U:Channel + NumCast + Num>(&self) -> Hsv<U,S> {
-        Hsv::new(Deg(cast(self.h.value())),
+        Hsv::new(Deg(cast_hue(self.h.value())),
                  self.s.to_channel(),
                  self.v.to_channel())
     }
@@ -144,11 +145,10 @@ impl<T:Clone + Channel + NumCast + Num, S: TransferFunction> ToRgb for Hsv<T, S>
             let gray = Channel::from(self.v);
             Rgb::new(gray, gray, gray)
         } else {
-            let max_f: f64 = cast(T::CHANNEL_MAX);
             let hue: f64 = cast(self.h.wrap().value());
             let hue_six: f64 = hue / 360f64 * 6f64;
             let hue_six_cat: usize = cast(hue_six);
-            let hue_six_rem: T = cast(hue_six.fract() * max_f);
+            let hue_six_rem: T = hue_six.fract().to_channel();
             let pv = Channel::from((T::CHANNEL_MAX - self.s).normalized_mul(self.v));
             let qv = Channel::from((T::CHANNEL_MAX - self.s.normalized_mul(hue_six_rem)).normalized_mul(self.v));
             let tv = Channel::from((T::CHANNEL_MAX - self.s.normalized_mul(T::CHANNEL_MAX - hue_six_rem)).normalized_mul(self.v));
@@ -186,6 +186,26 @@ mod tests {
         assert_eq!(Hsv::<f64>::new(Deg(0.0), 1.0, 0.6).to_hsv::<f32>(),   Hsv::<f32>::new(Deg(0.0), 1.0, 0.6));
         assert_eq!(Hsv::<f64>::new(Deg(120.0), 1.0, 0.6).to_hsv::<f32>(), Hsv::<f32>::new(Deg(120.0), 1.0, 0.6));
         assert_eq!(Hsv::<f64>::new(Deg(240.0), 1.0, 0.6).to_hsv::<f32>(), Hsv::<f32>::new(Deg(240.0), 1.0, 0.6));
+    }
+
+    #[test]
+    fn test_hsv_hue_rounding() {
+        for (hue, expected) in [(15.8, 16u16), (14.5, 14), (15.5, 16), (359.8, 0), (-0.2, 0), (-15.8, 344)] {
+            let hsv = Hsv::<f64>::new(Deg(hue), 1.0, 1.0);
+            assert_eq!(hsv.to_hsv::<u16>().h.0, expected);
+            assert_eq!(hsv.to_hsv::<u32>().h.0, expected as u32);
+            assert_eq!(hsv.to_hsv::<f32>().h.0, hue as f32);
+            assert_eq!(hsv.to_hsv::<f64>().h.0, hue);
+        }
+        assert_eq!(Hsv::<f64>::new(Deg(15.8), 1.0, 1.0).to_hsv::<u8>().h.0, 16);
+        assert_eq!(Hsv::<f32>::new(Deg(15.5), 1.0, 1.0).to_hsv::<u16>().h.0, 16);
+    }
+
+    #[test]
+    fn test_hsv_to_rgb_fractional_hue() {
+        assert_eq!(Hsv::<u16>::new(Deg(30), 65535, 65535).to_rgb::<u16>(), Rgb::new(65535, 32768, 0));
+        // A hue in the second half of a sector must still use that sector.
+        assert_eq!(Hsv::<f64>::new(Deg(45.0), 1.0, 1.0).to_rgb::<u8>(), Rgb::new(255, 191, 0));
     }
 
     #[test]

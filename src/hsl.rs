@@ -18,6 +18,7 @@ use angle::*;
 
 use crate::{Color, FloatColor};
 use crate::{Channel, FloatChannel};
+use crate::channel::cast_hue;
 use crate::{Rgb, ToRgb};
 use crate::alpha::{ToRgba, Rgba};
 use crate::color_space::{Srgb, TransferFunction};
@@ -121,7 +122,7 @@ impl<T:Channel + NumCast + Num, S: TransferFunction> ToHsl for Hsl<T, S> {
     type Standard = S;
     #[inline]
     fn to_hsl<U:Channel + NumCast + Num>(&self) -> Hsl<U,S> {
-        Hsl::new(Deg(cast(self.h.value())),
+        Hsl::new(Deg(cast_hue(self.h.value())),
                  self.s.to_channel(),
                  self.l.to_channel())
     }
@@ -177,6 +178,26 @@ mod tests {
         assert_eq!(Hsl::<f64>::new(Deg(0.0), 1.0, 0.6).to_hsl::<f32>(),   Hsl::<f32>::new(Deg(0.0), 1.0, 0.6));
         assert_eq!(Hsl::<f64>::new(Deg(120.0), 1.0, 0.6).to_hsl::<f32>(), Hsl::<f32>::new(Deg(120.0), 1.0, 0.6));
         assert_eq!(Hsl::<f64>::new(Deg(240.0), 1.0, 0.6).to_hsl::<f32>(), Hsl::<f32>::new(Deg(240.0), 1.0, 0.6));
+    }
+
+    #[test]
+    fn test_hsl_hue_rounding() {
+        for (hue, expected) in [(15.8, 16u16), (14.5, 14), (15.5, 16), (359.8, 0), (-0.2, 0), (-15.8, 344)] {
+            let hsl = Hsl::<f64>::new(Deg(hue), 1.0, 0.5);
+            assert_eq!(hsl.to_hsl::<u16>().h.0, expected);
+            assert_eq!(hsl.to_hsl::<f32>().h.0, hue as f32);
+            assert_eq!(hsl.to_hsl::<f64>().h.0, hue);
+        }
+    }
+
+    #[test]
+    fn test_rgb_to_hsl_hue_rounding() {
+        let rgb = Rgb::<f64>::new(1.0, 0.263, 0.0);
+        assert_eq!(rgb.to_hsl::<u16>().h.0, 16);
+        assert!((rgb.to_hsl::<f64>().h.0 - 15.78).abs() < 1e-12);
+        let near_red = Rgb::<f64>::new(1.0, 0.0, 0.005);
+        assert_eq!(near_red.to_hsl::<u16>().h.0, 0);
+        assert_eq!(Rgb::<f64>::new(1.0, 0.0, 0.5).to_hsl::<u16>().h.0, 330);
     }
 
     #[test]
